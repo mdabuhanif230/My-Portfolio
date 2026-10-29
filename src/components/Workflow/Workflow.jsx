@@ -1,0 +1,309 @@
+import { Fragment, useLayoutEffect, useRef, useState } from "react";
+import { motion, useScroll, useTransform } from "framer-motion";
+import {
+  FaLightbulb,
+  FaPaintBrush,
+  FaCode,
+  FaBug,
+  FaRocket,
+  FaHeadset,
+} from "react-icons/fa";
+import SectionHeading from "../SectionHeading";
+import BorderGlow from "../BorderGlow/BorderGlow";
+import { glowTheme } from "../BorderGlow/glowTheme";
+import MagicBentoPanel from "../MagicBento/MagicBento";
+import RocketIcon from "./RocketIcon";
+import useMediaQuery from "../../lib/useMediaQuery";
+
+const steps = [
+  {
+    icon: <FaLightbulb />,
+    title: "Plan",
+    description: "I start by understanding the goal, the users, and the core features so the project has a clear direction before any code is written.",
+  },
+  {
+    icon: <FaPaintBrush />,
+    title: "Design",
+    description: "Layouts are shaped around a clean, responsive design that feels intuitive across every screen size.",
+  },
+  {
+    icon: <FaCode />,
+    title: "Develop",
+    description: "Ideas turn into code here — building reusable React and Next.js components, with Node.js and MongoDB on the backend side.",
+  },
+  {
+    icon: <FaBug />,
+    title: "Test",
+    description: "Features are tested across devices and edge cases, fixing bugs early to keep the final product stable.",
+  },
+  {
+    icon: <FaRocket />,
+    title: "Deploy",
+    description: "Once everything checks out, the project is built and shipped to production with the right configuration.",
+  },
+  {
+    icon: <FaHeadset />,
+    title: "Maintain",
+    description: "Launch isn't the end — I keep improving the project with feedback and updates after it goes live.",
+  },
+];
+
+const StepCard = ({ step, index }) => (
+  <BorderGlow {...glowTheme} backgroundColor="#0a0a0a" borderRadius={24} className="w-full">
+    <MagicBentoPanel className="flex items-start gap-4 p-5 md:p-6">
+      <div className="shrink-0 w-12 h-12 md:w-14 md:h-14 rounded-xl bg-lime-400/10 border border-lime-400/20 flex items-center justify-center text-lime-400 text-xl md:text-2xl">
+        {step.icon}
+      </div>
+      <div>
+        <p className="text-[10px] font-bold uppercase tracking-widest text-lime-400 mb-1">Step {index + 1}</p>
+        <h3 className="text-lg md:text-xl font-black text-white mb-2">{step.title}</h3>
+        <p className="text-zinc-400 text-sm leading-relaxed">{step.description}</p>
+      </div>
+    </MagicBentoPanel>
+  </BorderGlow>
+);
+
+/**
+ * Builds a connector between the CENTERS of two consecutive cards: a long
+ * horizontal sweep at the outgoing card's row (running straight through the
+ * next card's side), one rounded turn, then a vertical drop down to that
+ * next card's own center. Since cards paint above this layer, the segment
+ * "inside" each card is hidden by its opaque background, giving the illusion
+ * that the line dives through the middle of every card and re-emerges on
+ * the other side, matching the reference site.
+ */
+const buildConnector = (aX, aY, bX, bY, radius) => {
+  const hSign = bX >= aX ? 1 : -1;
+  const vSign = bY >= aY ? 1 : -1;
+  const r = Math.max(0, Math.min(radius, Math.abs(bX - aX) - 1, Math.abs(bY - aY) - 1));
+
+  const d = [
+    `M ${aX} ${aY}`,
+    `L ${bX - r * hSign} ${aY}`,
+    `Q ${bX} ${aY} ${bX} ${aY + r * vSign}`,
+    `L ${bX} ${bY}`,
+  ].join(" ");
+
+  return { d };
+};
+
+const MobileTimeline = () => (
+  <div className="space-y-6">
+    {steps.map((step, i) => (
+      <motion.div
+        key={step.title}
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ delay: i * 0.05 }}
+        className="flex gap-4"
+      >
+        <div className="flex flex-col items-center shrink-0">
+          <div className="w-9 h-9 rounded-full bg-lime-400 text-black font-black flex items-center justify-center text-sm">
+            {i + 1}
+          </div>
+          {i < steps.length - 1 && (
+            <div className="flex-1 w-px border-l-2 border-dashed border-zinc-700 my-2" />
+          )}
+        </div>
+        <div className="flex-1 pb-2">
+          <StepCard step={step} index={i} />
+        </div>
+      </motion.div>
+    ))}
+  </div>
+);
+
+const DesktopTimeline = () => {
+  const containerRef = useRef(null);
+  const cardRefs = useRef([]);
+  const fullPathRef = useRef(null);
+  const pathLengthRef = useRef(0);
+  const lastProgressRef = useRef(0);
+  const recomputeRef = useRef(() => {});
+  const [connectors, setConnectors] = useState([]);
+  const [svgSize, setSvgSize] = useState({ width: 0, height: 0 });
+  const [rocketReady, setRocketReady] = useState(false);
+
+  const fullPathD = connectors.map((c) => c.d).join(" ");
+
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start center", "end center"],
+  });
+
+  // Reads the path directly on every scroll tick (via framer-motion's
+  // MotionValues) instead of going through React state, so the rocket's
+  // position and rotation update smoothly on every frame, not just on
+  // whichever renders happen to catch a "change" event.
+  const getPointAt = (progress) => {
+    const path = fullPathRef.current;
+    const len = pathLengthRef.current;
+    if (!path || !len) return { x: 0, y: 0 };
+    const clamped = Math.min(Math.max(progress, 0), 1);
+    return path.getPointAtLength(clamped * len);
+  };
+
+  // Faces the rocket toward wherever it's actually heading: scrolling down
+  // moves it forward along the path, scrolling up reverses it, so the nose
+  // should flip 180° instead of always pointing the path's "forward" way.
+  const getAngleAt = (progress) => {
+    const path = fullPathRef.current;
+    const len = pathLengthRef.current;
+    if (!path || !len) return 0;
+    const clamped = Math.min(Math.max(progress, 0), 1);
+    const direction = clamped >= lastProgressRef.current ? 1 : -1;
+    lastProgressRef.current = clamped;
+
+    const l = clamped * len;
+    const neighborL = Math.min(len, Math.max(0, l + direction));
+    const p1 = path.getPointAtLength(l);
+    const p2 = path.getPointAtLength(neighborL);
+    return Math.atan2(p2.y - p1.y, p2.x - p1.x) * (180 / Math.PI);
+  };
+
+  const rocketX = useTransform(scrollYProgress, (v) => getPointAt(v).x);
+  const rocketY = useTransform(scrollYProgress, (v) => getPointAt(v).y);
+  const rocketAngle = useTransform(scrollYProgress, getAngleAt);
+
+  useLayoutEffect(() => {
+    const container = containerRef.current;
+    if (!container) return undefined;
+
+    const recompute = () => {
+      const containerRect = container.getBoundingClientRect();
+      setSvgSize({ width: containerRect.width, height: containerRect.height });
+
+      const rects = cardRefs.current.map((el) => {
+        if (!el) return null;
+        const r = el.getBoundingClientRect();
+        return {
+          midX: r.left - containerRect.left + r.width / 2,
+          midY: r.top - containerRect.top + r.height / 2,
+        };
+      });
+
+      const next = [];
+      for (let i = 0; i < rects.length - 1; i++) {
+        const a = rects[i];
+        const b = rects[i + 1];
+        if (!a || !b) continue;
+        next.push(buildConnector(a.midX, a.midY, b.midX, b.midY, 48));
+      }
+      setConnectors(next);
+
+      // Path DOM updates asynchronously after state commit; measure next frame.
+      requestAnimationFrame(() => {
+        if (!fullPathRef.current) return;
+        pathLengthRef.current = fullPathRef.current.getTotalLength();
+        setRocketReady(true);
+
+        // Force an immediate refresh so the rocket doesn't wait for the next
+        // scroll event to reflect freshly measured geometry.
+        const progress = scrollYProgress.get();
+        rocketX.set(getPointAt(progress).x);
+        rocketY.set(getPointAt(progress).y);
+        rocketAngle.set(getAngleAt(progress));
+      });
+    };
+
+    recomputeRef.current = recompute;
+    recompute();
+    const ro = new ResizeObserver(recompute);
+    ro.observe(container);
+    window.addEventListener("resize", recompute);
+
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", recompute);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // The entrance slide (x transform) temporarily shifts each card's measured
+  // position; re-measure once it settles so the connector stays aligned.
+  const handleCardAnimationComplete = () => recomputeRef.current();
+
+  return (
+    <div ref={containerRef} className="relative">
+      <svg
+        className="absolute top-0 left-0 pointer-events-none"
+        width={svgSize.width}
+        height={svgSize.height}
+        style={{ overflow: "visible" }}
+      >
+        <path ref={fullPathRef} d={fullPathD} fill="none" stroke="#52525b" strokeWidth="2" strokeDasharray="7 7" />
+      </svg>
+
+      {rocketReady && (
+        // Moved with transform (x/y) instead of left/top, so scrolling
+        // never triggers a layout pass — only GPU compositing.
+        <motion.div className="absolute left-0 top-0" style={{ x: rocketX, y: rocketY }}>
+          <motion.div style={{ x: "-50%", y: "-50%", rotate: rocketAngle }}>
+            <RocketIcon className="w-[67px] h-10 drop-shadow-[0_4px_12px_rgba(0,0,0,0.35)]" />
+          </motion.div>
+        </motion.div>
+      )}
+
+      <div className="grid grid-cols-[1fr_260px_1fr] gap-x-0 relative">
+        {steps.map((step, i) => {
+          const isLeft = i % 2 === 0;
+          return (
+            <Fragment key={step.title}>
+              <div className="py-6 flex items-center justify-end">
+                {isLeft && (
+                  <motion.div
+                    ref={(el) => (cardRefs.current[i] = el)}
+                    initial={{ opacity: 0, x: -30 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5 }}
+                    onAnimationComplete={handleCardAnimationComplete}
+                    className="w-full max-w-md"
+                  >
+                    <StepCard step={step} index={i} />
+                  </motion.div>
+                )}
+              </div>
+
+              <div />
+
+              <div className="py-6 flex items-center justify-start">
+                {!isLeft && (
+                  <motion.div
+                    ref={(el) => (cardRefs.current[i] = el)}
+                    initial={{ opacity: 0, x: 30 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5 }}
+                    onAnimationComplete={handleCardAnimationComplete}
+                    className="w-full max-w-md"
+                  >
+                    <StepCard step={step} index={i} />
+                  </motion.div>
+                )}
+              </div>
+            </Fragment>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+const Workflow = () => {
+  // Render only the layout that is actually visible (mobile list OR desktop
+  // zigzag) instead of mounting both and hiding one with CSS.
+  const isDesktop = useMediaQuery("(min-width: 1024px)");
+
+  return (
+    <div className="mb-20 md:mb-28">
+      <SectionHeading kicker="My Process" before="How I Build " highlight="Projects" align="center" />
+
+      {/* Mobile: simple stacked timeline · Desktop: zigzag timeline with a measured, rounded connector path */}
+      {isDesktop ? <DesktopTimeline /> : <MobileTimeline />}
+    </div>
+  );
+};
+
+export default Workflow;

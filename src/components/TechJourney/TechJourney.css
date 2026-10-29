@@ -1,0 +1,459 @@
+/* ============================================================
+   Developer Journey — "git log --graph" terminal timeline
+   Clickable commits (git show style), scroll-driven spine.
+   Robust flex/grid layout, no fragile pixel math.
+   ============================================================ */
+
+:root {
+  --tj-mono: "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular, Menlo,
+    Consolas, monospace;
+}
+
+.tj-terminal {
+  position: relative;
+  overflow: hidden;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(15, 17, 13, 0.94) 0%, rgba(9, 10, 11, 0.94) 100%);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+}
+
+/* one thin, static lime highlight on the top edge */
+.tj-terminal::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 8%;
+  right: 8%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(163, 230, 53, 0.45), transparent);
+  pointer-events: none;
+}
+
+/* ---------- Terminal title bar ---------- */
+.tj-bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.9rem 1.25rem;
+  background: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.tj-lights {
+  display: flex;
+  gap: 0.45rem;
+  flex-shrink: 0;
+}
+
+.tj-light {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: block;
+}
+
+.tj-light--red {
+  background: #ff5f57;
+}
+.tj-light--amber {
+  background: #febc2e;
+}
+.tj-light--green {
+  background: #28c840;
+}
+
+.tj-bar-path {
+  flex: 1;
+  text-align: center;
+  font-family: var(--tj-mono);
+  font-size: 0.78rem;
+  color: #6b7280;
+  letter-spacing: 0.02em;
+}
+
+.tj-bar-spacer {
+  width: 54px;
+  flex-shrink: 0;
+}
+
+/* ---------- Command line ---------- */
+.tj-cmd {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 1.1rem 1.5rem 0.35rem;
+  font-family: var(--tj-mono);
+  font-size: 0.86rem;
+}
+
+.tj-prompt {
+  color: #a3e635;
+  font-weight: 700;
+}
+
+.tj-cmd-text {
+  color: #d4d4d8;
+}
+
+.tj-caret {
+  width: 9px;
+  height: 1.05rem;
+  background: #a3e635;
+  display: inline-block;
+  animation: tjBlink 1.1s steps(1) infinite;
+}
+
+@keyframes tjBlink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  50.01%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.tj-hint {
+  padding: 0 1.5rem 0.5rem;
+  font-family: var(--tj-mono);
+  font-size: 0.74rem;
+  color: #52525b;
+}
+
+.tj-hint-key {
+  color: #a3e635;
+  border: 1px solid rgba(163, 230, 53, 0.3);
+  border-radius: 5px;
+  padding: 0.05rem 0.4rem;
+  font-size: 0.68rem;
+}
+
+.tj-hint-cmd {
+  color: #22d3ee;
+}
+
+/* ---------- Graph ---------- */
+.tj-graph {
+  position: relative;
+  padding: 1.25rem 1.5rem 2rem;
+}
+
+@media (min-width: 768px) {
+  .tj-graph {
+    padding: 1.5rem 2.5rem 2.5rem;
+  }
+}
+
+/* ---------- Commit row ---------- */
+.tj-commit {
+  position: relative;
+  display: grid;
+  grid-template-columns: 46px 1fr;
+  gap: 1.25rem;
+  padding-bottom: 1.5rem;
+}
+
+.tj-commit:last-child {
+  padding-bottom: 0;
+}
+
+@media (min-width: 768px) {
+  .tj-commit {
+    gap: 1.75rem;
+  }
+}
+
+/* connector — runs from below this dot down to the next dot,
+   never through a node. Anchored per-row, so it never breaks. */
+.tj-commit:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  left: 22px;
+  top: 50px;
+  bottom: -1.6rem;
+  width: 2px;
+  border-radius: 2px;
+  background: linear-gradient(
+    180deg,
+    rgba(163, 230, 53, 0.55),
+    rgba(34, 211, 238, 0.2)
+  );
+  z-index: 0;
+}
+
+/* dot */
+.tj-dot-col {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  padding-top: 0.15rem;
+}
+
+.tj-dot {
+  position: relative;
+  z-index: 1;
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: #0d0f13;
+  border: 1.5px solid rgba(163, 230, 53, 0.35);
+  color: #a3e635;
+  box-shadow: 0 0 16px rgba(163, 230, 53, 0.2);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tj-dot-icon {
+  font-size: 1.05rem;
+}
+
+.tj-commit--open .tj-dot {
+  border-color: #a3e635;
+  background: linear-gradient(135deg, rgba(163, 230, 53, 0.25), rgba(163, 230, 53, 0.06));
+  box-shadow: 0 0 26px rgba(163, 230, 53, 0.4);
+  transform: scale(1.06);
+}
+
+/* ---------- Commit body ---------- */
+.tj-commit-body {
+  min-width: 0;
+}
+
+/* clickable one-line (git log --oneline) */
+.tj-oneline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.7rem;
+  width: 100%;
+  padding: 0.7rem 0.9rem;
+  margin-top: 0.15rem;
+  background: rgba(255, 255, 255, 0.015);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  font-family: var(--tj-mono);
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.tj-oneline:hover {
+  background: rgba(163, 230, 53, 0.05);
+  border-color: rgba(163, 230, 53, 0.25);
+}
+
+.tj-commit--open .tj-oneline {
+  background: rgba(163, 230, 53, 0.05);
+  border-color: rgba(163, 230, 53, 0.3);
+}
+
+.tj-hash {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #fbbf24;
+  letter-spacing: 0.03em;
+}
+
+.tj-branch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.12rem 0.55rem;
+  font-size: 0.7rem;
+  color: #22d3ee;
+  background: rgba(34, 211, 238, 0.08);
+  border: 1px solid rgba(34, 211, 238, 0.25);
+  border-radius: 999px;
+}
+
+.tj-branch-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #22d3ee;
+}
+
+.tj-head-tag {
+  padding: 0.12rem 0.5rem;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #000;
+  background: #a3e635;
+  border-radius: 999px;
+}
+
+.tj-oneline-msg {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #e4e4e7;
+  flex: 1;
+  min-width: 60%;
+}
+
+@media (min-width: 768px) {
+  .tj-oneline-msg {
+    min-width: auto;
+  }
+}
+
+.tj-verb {
+  color: #a3e635;
+}
+
+.tj-toggle {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  color: #71717a;
+  font-size: 0.7rem;
+  background: rgba(255, 255, 255, 0.04);
+  transition: transform 0.35s ease, color 0.3s ease, background 0.3s ease;
+  transform: rotate(-90deg);
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.tj-commit--open .tj-toggle {
+  transform: rotate(0deg);
+  color: #a3e635;
+  background: rgba(163, 230, 53, 0.12);
+}
+
+/* ---------- Expandable detail (git show) ---------- */
+.tj-detail-wrap {
+  overflow: hidden;
+}
+
+.tj-detail {
+  padding: 1.25rem 0.9rem 0.5rem;
+}
+
+.tj-tagline {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #a3e635;
+  margin-bottom: 0.75rem;
+}
+
+.tj-desc {
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: #a1a1aa;
+  max-width: 56ch;
+  margin-bottom: 1.15rem;
+}
+
+.tj-skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin-bottom: 1.1rem;
+}
+
+.tj-chip {
+  padding: 0.4rem 0.85rem;
+  border-radius: 10px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #d4d4d8;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.3s ease;
+}
+
+.tj-chip:hover {
+  color: #a3e635;
+  border-color: rgba(163, 230, 53, 0.4);
+  background: rgba(163, 230, 53, 0.08);
+  transform: translateY(-2px);
+}
+
+.tj-outcome {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #e4e4e7;
+}
+
+.tj-outcome-icon {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  background: rgba(163, 230, 53, 0.14);
+  color: #a3e635;
+  font-size: 0.62rem;
+  flex-shrink: 0;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 640px) {
+  .tj-bar-path {
+    font-size: 0.68rem;
+  }
+
+  .tj-cmd {
+    font-size: 0.72rem;
+    padding: 1rem 1.1rem 0.3rem;
+  }
+
+  .tj-hint {
+    padding: 0 1.1rem 0.5rem;
+    font-size: 0.68rem;
+  }
+
+  .tj-graph {
+    padding: 1rem 1.1rem 1.75rem;
+  }
+
+  .tj-spine {
+    left: calc(1.1rem + 20px);
+  }
+
+  .tj-commit {
+    grid-template-columns: 40px 1fr;
+    gap: 1rem;
+  }
+
+  .tj-commit:not(:last-child)::before {
+    left: 19px;
+    top: 44px;
+    bottom: -1.5rem;
+  }
+
+  .tj-dot {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+  }
+
+  .tj-oneline {
+    padding: 0.6rem 0.75rem;
+  }
+
+  .tj-oneline-msg {
+    font-size: 0.84rem;
+  }
+
+  .tj-detail {
+    padding: 1.1rem 0.75rem 0.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tj-caret {
+    animation: none;
+  }
+}

@@ -1,0 +1,298 @@
+/* Poppins is loaded from index.html (<link>) — no blocking @import here */
+@import "tailwindcss";
+@plugin "daisyui";
+
+body {
+  font-family: 'Poppins', sans-serif;
+  overflow-x: hidden;
+}
+
+/* never let a wide element stretch the page on phones (sticky still works with clip) */
+@supports (overflow: clip) {
+  html,
+  body {
+    overflow-x: clip;
+  }
+}
+
+/* ============================================================
+   Performance modes (classes set on <html> by src/lib/perf.js)
+   .perf-lite → touch or weak device: no backdrop blur, lighter cards
+   .perf-low  → weak device / reduced motion: decorative loops stopped
+   ============================================================ */
+
+/* backdrop-filter re-samples everything behind it on every scroll frame;
+   on a near-black site it is visually ~invisible, so drop it here */
+.perf-lite *,
+.perf-lite *::before,
+.perf-lite *::after {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* decorative infinite loops (status dots, carets, scan lines, rings) */
+.perf-low .banner-caret,
+.perf-low .banner-badge-dot,
+.perf-low .hud-scan,
+.perf-low .hud-rec-dot,
+.perf-low .laser,
+.perf-low .radar-ping,
+.perf-low .tj-caret,
+.perf-low .site-bg-anim,
+.perf-low .preloader-banner-glow,
+.perf-low .preloader-banner-ring,
+.perf-low .preloader-shimmer {
+  animation: none !important;
+}
+
+.perf-low .hud-scan,
+.perf-low .radar-ping,
+.perf-low .preloader-shimmer {
+  display: none;
+}
+
+/* soft glow blob without a blur() filter — a radial gradient looks the same
+   and costs nothing to paint (blur(130px) is very expensive on weak GPUs) */
+.glow-blob {
+  pointer-events: none;
+  position: absolute;
+  border-radius: 9999px;
+  background: radial-gradient(closest-side, var(--glow-blob-color, rgba(163, 230, 53, 0.1)), transparent);
+}
+
+:where(button, a[href]) {
+  -webkit-tap-highlight-color: transparent;
+}
+
+:where(button, a[href]):not(:disabled) {
+  transition-property: scale, filter, box-shadow, background-color, border-color, color, transform;
+  transition-duration: 180ms;
+  transition-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+:where(button, a[href]):not(:disabled):active {
+  scale: 0.96;
+  filter: brightness(1.12);
+  animation: clickGlow 420ms ease-out;
+}
+
+/* BorderGlow's inner wrapper defaults to overflow:auto; our card content
+   already manages its own overflow (marquee, rounded images), so avoid
+   stray scrollbars from sub-pixel rounding by letting content decide. */
+.border-glow-inner {
+  overflow: visible;
+}
+
+
+/* Optimized: Only apply to banner section */
+.banner .site-text-glitch :where(h1, h2, h3, h4, h5, h6, p, span, a, button, label, li, input, textarea) {
+  text-shadow: 0 0 0 rgba(163, 230, 53, 0);
+}
+
+.banner .site-text-glitch :where(h1, h2, h3, h4, h5, h6, p, span, a, button, label, li):not(.social-icon-inner) {
+  animation: globalTextGlitch 5.5s steps(1, end) infinite;
+}
+
+.banner .site-text-glitch :where(input, textarea):not(:focus) {
+  animation: globalTextGlitch 7s steps(1, end) infinite;
+}
+
+.banner .site-text-glitch :where(button, a[href]):hover {
+  animation-duration: 1.9s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .banner .site-text-glitch :where(h1, h2, h3, h4, h5, h6, p, span, a, button, label, li, input, textarea) {
+    animation: none !important;
+    text-shadow: none !important;
+  }
+}
+
+@keyframes globalTextGlitch {
+  0%,
+  88%,
+  100% {
+    text-shadow: 0 0 0 rgba(163, 230, 53, 0);
+    filter: none;
+  }
+  90% {
+    text-shadow:
+      1px 0 rgba(163, 230, 53, 0.45),
+      -1px 0 rgba(34, 211, 238, 0.22);
+    filter: brightness(1.08);
+  }
+  91% {
+    text-shadow:
+      -1px 0 rgba(163, 230, 53, 0.38),
+      1px 0 rgba(34, 211, 238, 0.18);
+  }
+  92% {
+    text-shadow: 0 0 8px rgba(163, 230, 53, 0.22);
+    filter: brightness(1.04);
+  }
+}
+
+@keyframes clickGlow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(163, 230, 53, 0.35);
+  }
+  100% {
+    box-shadow: 0 0 0 16px rgba(163, 230, 53, 0);
+  }
+}
+
+.preloader-banner-glow {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  width: 340px;
+  height: 340px;
+  transform: translate(-50%, -50%);
+  border-radius: 999px;
+  /* gradient is already soft — no blur() filter needed */
+  background: radial-gradient(circle, rgba(163, 230, 53, 0.2) 0%, rgba(16, 185, 129, 0.07) 45%, rgba(0, 0, 0, 0) 72%);
+  animation: preloaderPulse 2.2s ease-in-out infinite;
+}
+
+.preloader-banner-ring {
+  position: absolute;
+  inset: -16px;
+  border-radius: 1.8rem;
+  border: 1px solid rgba(163, 230, 53, 0.32);
+  animation: preloaderRingPulse 1.5s ease-in-out infinite;
+}
+
+.preloader-counter {
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 12px rgba(163, 230, 53, 0.5);
+}
+
+.preloader-shimmer {
+  background: linear-gradient(110deg, transparent 15%, rgba(255, 255, 255, 0.12) 45%, transparent 70%);
+  transform: translateX(-130%);
+  animation: preloaderShimmer 1.4s ease-in-out infinite;
+}
+
+.preloader-text-pop {
+  animation: preloaderTextPop 0.8s ease-out;
+}
+
+.preloader-subtext-pop {
+  animation: preloaderTextPop 1s ease-out;
+}
+
+@keyframes preloaderShimmer {
+  0% {
+    transform: translateX(-130%);
+  }
+  100% {
+    transform: translateX(130%);
+  }
+}
+
+@keyframes preloaderTextPop {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+    letter-spacing: 0.24em;
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    letter-spacing: 0.18em;
+  }
+}
+
+@keyframes preloaderRingPulse {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(0.985);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.01);
+  }
+}
+
+@keyframes preloaderPulse {
+  0%,
+  100% {
+    opacity: 0.52;
+    transform: translate(-50%, -50%) scale(0.93);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.05);
+  }
+}
+
+.social-icon-link {
+  position: relative;
+  width: 3.5rem;
+  height: 3.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 1.25rem;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.social-icon-inner {
+  position: relative;
+  z-index: 2;
+  font-size: 1.2rem;
+  color: #a1a1aa;
+  transition: all 0.4s ease;
+}
+
+.social-icon-link:hover {
+  border-color: rgba(163, 230, 53, 0.5);
+  background: rgba(163, 230, 53, 0.1);
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px -10px rgba(163, 230, 53, 0.3);
+}
+
+.social-icon-link:hover .social-icon-inner {
+  color: #a3e635;
+  transform: scale(1.1);
+}
+
+.social-icons .social-icon-link.github:hover {
+  border-color: #a3e635;
+}
+
+.social-icons .social-icon-link.linkedin:hover {
+  border-color: #a3e635;
+}
+
+.social-icons .social-icon-link.instagram:hover {
+  border-color: #a3e635;
+}
+
+.social-icons .social-icon-link.facebook:hover {
+  border-color: #a3e635;
+}
+
+@keyframes socialFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes socialShine {
+  0% {
+    transform: translateX(-85%) rotate(15deg);
+  }
+  100% {
+    transform: translateX(85%) rotate(15deg);
+  }
+}

@@ -1,0 +1,198 @@
+import logo from "../assets/logo.png";
+import { FaLocationDot } from "react-icons/fa6";
+import { MdEmail } from "react-icons/md";
+import { FaPhoneAlt, FaHome, FaUserAlt, FaCode, FaEnvelope, FaGithub, FaLinkedin, FaFacebook, FaInstagram } from "react-icons/fa";
+import { useContext } from "react";
+import { motion } from "framer-motion";
+import { NavigateContext } from "../context/NavigateContext";
+import DecryptLabel from "./DecryptLabel";
+
+const Footer = () => {
+  const { scrollToSection, homeRef, aboutRef, skillRef, contactRef } = useContext(NavigateContext);
+
+  const socialLinks = [
+    { icon: <FaGithub />, link: "https://github.com/mdabuhanif230", className: "github", label: "GitHub" },
+    { icon: <FaLinkedin />, link: "https://www.linkedin.com/in/mdabuhanif230/", className: "linkedin", label: "LinkedIn" },
+    { icon: <FaInstagram />, link: "https://www.instagram.com/mhabuhanif230/", className: "instagram", label: "Instagram" },
+    { icon: <FaFacebook />, link: "https://www.facebook.com/mhabuhanif230", className: "facebook", label: "Facebook" },
+  ];
+
+  const socialContainerVariants = {
+    hidden: { opacity: 0, y: 10 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { staggerChildren: 0.12, delayChildren: 0.08 },
+    },
+  };
+
+  const socialItemVariants = {
+    hidden: { opacity: 0, y: 14, scale: 0.85 },
+    visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.35, ease: "easeOut" } },
+  };
+
+  return (
+    <footer className="relative bg-[#050505] pt-20 pb-10 overflow-hidden border-t border-white/5">
+      {/* Background Subtle Glow */}
+      <div className="glow-blob -top-20 left-1/2 -translate-x-1/2 w-[460px] max-w-full h-[260px]" />
+
+      <div className="max-w-[96rem] mx-auto px-6 lg:px-12 relative z-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 mb-16">
+          
+          {/* 1. Branding Section (Col-5) */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            className="md:col-span-2 lg:col-span-5 space-y-6"
+          >
+            <img className="w-48 lg:w-56" src={logo} alt="Abu Hanif Logo" />
+            <p className="text-zinc-400 text-base max-w-sm leading-relaxed">
+              Building responsive, user-friendly web applications with React and Next.js, with a focus on clean code and good user experience. Let&apos;s create something great together.
+            </p>
+            <motion.div
+              variants={socialContainerVariants}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              className="footer-socials relative z-10 mt-2 mb-2"
+            >
+              <div className="social-icons flex items-center justify-start gap-[10px]">
+                {socialLinks.map((social, i) => (
+                  <motion.a
+                    variants={socialItemVariants}
+                    whileHover={{ y: -3, scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    key={social.label}
+                    href={social.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={social.label}
+                    className={`social-icon-link ${social.className}`}
+                    style={{ animationDelay: `${i * 0.22}s` }}
+                  >
+                    <span className="social-icon-inner">{social.icon}</span>
+                  </motion.a>
+                ))}
+              </div>
+            </motion.div>
+          </motion.div>
+
+          {/* 2. Quick Access (Col-3) */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="min-w-0 lg:col-span-3"
+          >
+            <h3 className="text-white font-bold text-lg mb-6 uppercase tracking-widest italic border-l-4 border-lime-400 pl-3">
+              <DecryptLabel text="Navigation" parentClassName="text-white font-bold" className="text-white" />
+            </h3>
+            <ul className="space-y-4">
+              {[
+                { label: "Home", icon: <FaHome />, action: () => scrollToSection(homeRef) },
+                { label: "About Me", icon: <FaUserAlt />, action: () => scrollToSection(aboutRef) },
+                { label: "My Skills", icon: <FaCode />, action: () => scrollToSection(skillRef) },
+                { label: "Contact", icon: <FaEnvelope />, action: () => scrollToSection(contactRef) },
+              ].map((item, idx) => (
+                <li key={idx}>
+                  <button
+                    onClick={item.action}
+                    className="group flex items-center gap-3 text-zinc-400 hover:text-lime-400 transition-all duration-300"
+                  >
+                    <span className="text-sm group-hover:scale-125 transition-transform">{item.icon}</span>
+                    <span className="font-medium">
+                      <DecryptLabel
+                        text={item.label}
+                        animateOn="hover"
+                        sequential={false}
+                        maxIterations={8}
+                        speed={35}
+                        parentClassName="text-inherit group-hover:text-lime-400"
+                        className="text-inherit group-hover:text-lime-400"
+                      />
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </motion.div>
+
+          {/* 3. Contact Info (Col-4) - All Clickable */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="min-w-0 lg:col-span-4"
+          >
+            <h3 className="text-white font-bold text-lg mb-6 uppercase tracking-widest italic border-l-4 border-lime-400 pl-3">
+              <DecryptLabel text="Connect Directly" parentClassName="text-white font-bold" className="text-white" />
+            </h3>
+            <div className="space-y-5">
+              {/* Location Link (Google Maps) */}
+              <a 
+                href="https://www.google.com/maps/search/Sirajganj,+Bangladesh" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="flex items-start gap-4 group cursor-pointer"
+              >
+                <div className="w-10 h-10 shrink-0 flex items-center justify-center rounded-xl bg-lime-400/10 border border-lime-400/20 text-lime-400 group-hover:bg-lime-400 group-hover:text-black transition-all shadow-[0_0_15px_rgba(163,230,53,0.1)]">
+                  <FaLocationDot />
+                </div>
+                <div>
+                  <p className="text-xs text-zinc-500 uppercase font-bold tracking-tighter">Location</p>
+                  <p className="text-zinc-300 group-hover:text-white transition-colors">Sirajganj, Bangladesh</p>
+                </div>
+              </a>
+
+              {/* Email Link */}
+              <a href="mailto:mhabuhanif230@gmail.com" className="flex items-start gap-4 group cursor-pointer">
+                <div className="w-10 h-10 shrink-0 flex items-center justify-center rounded-xl bg-lime-400/10 border border-lime-400/20 text-lime-400 group-hover:bg-lime-400 group-hover:text-black transition-all shadow-[0_0_15px_rgba(163,230,53,0.1)]">
+                  <MdEmail />
+                </div>
+                <div>
+                  <p className="text-xs text-zinc-500 uppercase font-bold tracking-tighter">Email Me</p>
+                  <p className="text-zinc-300 group-hover:text-lime-400 transition-colors">mhabuhanif230@gmail.com</p>
+                </div>
+              </a>
+
+              {/* Phone Link */}
+              <a href="tel:+8801615387126" className="flex items-start gap-4 group cursor-pointer">
+                <div className="w-10 h-10 shrink-0 flex items-center justify-center rounded-xl bg-lime-400/10 border border-lime-400/20 text-lime-400 group-hover:bg-lime-400 group-hover:text-black transition-all shadow-[0_0_15px_rgba(163,230,53,0.1)]">
+                  <FaPhoneAlt />
+                </div>
+                <div>
+                  <p className="text-xs text-zinc-500 uppercase font-bold tracking-tighter">Call Now</p>
+                  <p className="text-zinc-300 group-hover:text-lime-400 transition-colors">+880 1615-387126</p>
+                </div>
+              </a>
+            </div>
+          </motion.div>
+        </div>
+
+      </div>
+
+      <div className="max-w-[96rem] mx-auto px-6 lg:px-12 relative z-10">
+        <div className="footer-bottom pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
+          <p className="text-zinc-500 text-sm text-center md:text-left">
+            &copy; {new Date().getFullYear()}{" "}
+            <DecryptLabel
+              text="Md Abu Hanif"
+              revealDirection="start"
+              parentClassName="text-white font-bold"
+              className="text-white"
+            />
+            . All rights reserved.
+          </p>
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-lime-400 rounded-full animate-pulse" />
+            <span className="text-xs font-bold text-zinc-400 uppercase tracking-widest">
+              <DecryptLabel text="Available for hire" parentClassName="text-zinc-400" className="text-zinc-400" encryptedClassName="text-lime-400/70" />
+            </span>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+};
+
+export default Footer;
