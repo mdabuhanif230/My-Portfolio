@@ -278,6 +278,10 @@ body {
   border-color: #a3e635;
 }
 
+.social-icons .social-icon-link.x:hover {
+  border-color: #a3e635;
+}
+
 @keyframes socialFloat {
   0%,
   100% {

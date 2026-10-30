@@ -2,6 +2,7 @@ import { useContext, useState } from "react";
 import {
   FaEnvelope,
   FaFacebook,
+  FaInstagram,
   FaGithub,
   FaLinkedin,
   FaMapMarkerAlt,
@@ -9,6 +10,7 @@ import {
   FaShieldAlt,
   FaWhatsapp,
 } from "react-icons/fa";
+import { FaXTwitter } from "react-icons/fa6";
 import { motion } from "framer-motion";
 import { NavigateContext } from "../context/NavigateContext";
 import { publicApi } from "../lib/publicApi";
@@ -26,6 +28,8 @@ const socialLinks = [
   { label: "GitHub", icon: <FaGithub />, link: "https://github.com/mdabuhanif230" },
   { label: "LinkedIn", icon: <FaLinkedin />, link: "https://www.linkedin.com/in/mdabuhanif230/" },
   { label: "Facebook", icon: <FaFacebook />, link: "https://www.facebook.com/mhabuhanif230" },
+  { label: "Instagram", icon: <FaInstagram />, link: "https://www.instagram.com/mhabuhanif230/" },
+  { label: "X", icon: <FaXTwitter />, link: "https://x.com/mdabuhanif230" },
 ];
 
 const fieldClass =

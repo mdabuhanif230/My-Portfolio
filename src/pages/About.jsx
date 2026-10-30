@@ -150,6 +150,14 @@ const About = () => {
                 Git, GitHub, and AI-assisted coding. My goal is to become a skilled Full
                 Stack Web Developer who creates useful, reliable digital experiences.
               </p>
+              <p>
+                I am a passionate Full Stack Web Developer who enjoys building modern
+                websites, solving programming problems, and exploring new technologies. I
+                love learning new skills, creating practical projects, and using
+                AI-powered tools to improve my development workflow. I consider myself a
+                curious, creative, and dedicated learner who is always looking for
+                opportunities to grow as a developer.
+              </p>
             </div>
           </div>
 

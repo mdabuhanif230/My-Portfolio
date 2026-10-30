@@ -3,6 +3,7 @@ import {
   FaGithub,
   FaLinkedin,
   FaFacebook,
+  FaInstagram,
   FaArrowRight,
   FaDownload,
   FaNodeJs,
@@ -21,12 +22,15 @@ import banner from "../assets/myImg.webp";
 import { IntroContext } from "../context/IntroContext";
 import { isLiteMode, isLowEnd } from "../lib/perf";
 import { RESUME_URL, RESUME_FILENAME } from "../lib/resume";
+import { FaXTwitter } from "react-icons/fa6";
 import "./Banner.css";
 
 const socials = [
   { icon: <FaGithub />, link: "https://github.com/mdabuhanif230", label: "GitHub" },
   { icon: <FaLinkedin />, link: "https://www.linkedin.com/in/mdabuhanif230/", label: "LinkedIn" },
   { icon: <FaFacebook />, link: "https://www.facebook.com/mhabuhanif230", label: "Facebook" },
+  { icon: <FaInstagram />, link: "https://www.instagram.com/mhabuhanif230/", label: "Instagram" },
+  { icon: <FaXTwitter />, link: "https://x.com/mdabuhanif230", label: "X" },
 ];
 
 const leftTech = [

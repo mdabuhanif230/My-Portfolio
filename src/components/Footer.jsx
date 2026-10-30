@@ -1,6 +1,7 @@
 import logo from "../assets/logo.png";
 import { FaLocationDot } from "react-icons/fa6";
 import { MdEmail } from "react-icons/md";
+import { FaXTwitter } from "react-icons/fa6";
 import { FaPhoneAlt, FaHome, FaUserAlt, FaCode, FaEnvelope, FaGithub, FaLinkedin, FaFacebook, FaInstagram } from "react-icons/fa";
 import { useContext } from "react";
 import { motion } from "framer-motion";
@@ -15,6 +16,7 @@ const Footer = () => {
     { icon: <FaLinkedin />, link: "https://www.linkedin.com/in/mdabuhanif230/", className: "linkedin", label: "LinkedIn" },
     { icon: <FaInstagram />, link: "https://www.instagram.com/mhabuhanif230/", className: "instagram", label: "Instagram" },
     { icon: <FaFacebook />, link: "https://www.facebook.com/mhabuhanif230", className: "facebook", label: "Facebook" },
+    { icon: <FaXTwitter />, link: "https://x.com/mdabuhanif230", className: "x", label: "X" },
   ];
 
   const socialContainerVariants = {
