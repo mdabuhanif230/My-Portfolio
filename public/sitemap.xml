@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- TODO: replace YOUR-SITE-URL with your real site URL after deploying -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://YOUR-SITE-URL/</loc></url>
+  <url><loc>https://www.mhabuhanif.cyou/</loc></url>
 </urlset>

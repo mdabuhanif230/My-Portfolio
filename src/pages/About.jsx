@@ -158,6 +158,11 @@ const About = () => {
                 curious, creative, and dedicated learner who is always looking for
                 opportunities to grow as a developer.
               </p>
+              <p>
+                Away from the keyboard, I love sports, especially <b>cricket</b> and{" "}
+                <b>football</b>. Playing and following them keeps me energetic, and I bring
+                the same team spirit and never-give-up attitude into my work.
+              </p>
             </div>
           </div>
 

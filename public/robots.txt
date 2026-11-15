@@ -1,2 +1,3 @@
 User-agent: *
 Allow: /
+Sitemap: https://www.mhabuhanif.cyou/sitemap.xml
