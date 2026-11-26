@@ -2,11 +2,34 @@ import kindnestImg from "../../assets/Project-img/kindnest.jpg";
 import wanderlustImg from "../../assets/Project-img/wanderlust.jpg";
 import banglaNewsImg from "../../assets/Project-img/bangla-news-24.jpg";
 import bazarDorImg from "../../assets/Project-img/bazar-dor.jpg";
+import rentGearImg from "../../assets/Project-img/rentgear.jpg";
 
 // Edit this file to add / change projects. Screenshots live in
 // src/assets/Project-img/. Fields marked "verify" are written conservatively —
 // update them once you have checked the real code.
 const projects = [
+  {
+    id: 5,
+    name: "RentGear",
+    image: rentGearImg,
+    techStack: ["Next.js 16", "TypeScript", "Tailwind CSS", "Framer Motion", "MongoDB", "Better Auth", "JWT", "Stripe"],
+    description:
+      "A full-stack equipment rental marketplace where customers find and book verified gear, owners publish and manage listings, and admins moderate users and rentals. Includes role-based dashboards, live availability, Stripe Checkout and a separate Express API.",
+    features: [
+      "Searchable & filterable equipment catalogue",
+      "Booking with live availability & Stripe checkout",
+      "Customer, owner and admin dashboards",
+      "Add / edit listings with image upload",
+      "Favorites, rental history & reviews",
+      "Email / password and Google sign-in",
+    ],
+    liveLink: "https://rentgear-ivory.vercel.app",
+    githubClient: "https://github.com/mdabuhanif230/Equipment-Rental-Client",
+    challenges:
+      "Coordinating customer, owner and admin roles, keeping booking availability and unpaid holds in sync with the API, and verifying Stripe success and cancellation server-side.", // verify
+    futurePlans:
+      "Add owner-renter messaging, location-based discovery and a mobile app.", // verify
+  },
   {
     id: 1,
     name: "KindNest",
